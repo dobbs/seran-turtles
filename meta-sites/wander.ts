@@ -1,35 +1,20 @@
-const { stat } = Deno;
 import * as wiki from "seran/wiki.ts";
 import { Request } from "seran/wiki.ts";
 import { System, MetaSite } from "seran/system.ts";
 
-export let plugins = ["/client/wander.mjs", "../seran-turtles/client/turtle.mjs"]
-
-async function readDir(path) {
-  let fileInfo = await stat(path);
-  if (!fileInfo.isDirectory()) {
-    console.log(`path ${path} is not a directory.`);
-    return [];
-  }
-
-  return await Deno.readdir(path);
-}
-
-let metaPages = {};
+export let plugins = ["/client/wander.mjs", "/turtle.mjs"]
 
 // since constructors cannot be async and readDir is async, use an init method
 export async function init({site, system}: {site: MetaSite, system: System}) {
   wiki.enableLogin(site, system)
 }
 
-function wantsTurtleSave(req: Request) {
-  return req.url.indexOf("/turtle/save") == 0;
-}
 let turtle = {
   saved: {
     history: [{"fn":"clear","beforestate":{},"state":{"name":"origin","x":0,"y":0,"direction":-1.5707963267948966,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}},{"fn":"turn","beforestate":{"name":"origin","x":0,"y":0,"direction":-1.5707963267948966,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6},"state":{"name":"origin","x":0,"y":0,"direction":5.759586531581287,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}},{"fn":"move","beforestate":{"name":"origin","x":0,"y":0,"direction":5.759586531581287,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6},"state":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":5.759586531581287,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}},{"fn":"turn","beforestate":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":5.759586531581287,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6},"state":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":0.5235987755982983,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}},{"fn":"nextMovesize","beforestate":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":0.5235987755982983,"pensize":1,"pencolor":"black","movesize":30,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6},"state":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":0.5235987755982983,"pensize":1,"pencolor":"black","movesize":35,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}},{"fn":"move","beforestate":{"name":"origin","x":25.980762113533153,"y":-15.000000000000014,"direction":0.5235987755982983,"pensize":1,"pencolor":"black","movesize":35,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6},"state":{"name":"origin","x":56.29165124598852,"y":2.499999999999968,"direction":0.5235987755982983,"pensize":1,"pencolor":"black","movesize":35,"turnsize":1.0471975511965976,"turnsizeNumerator":1,"turnsizeDenominator":6}}]
   }
 };
+
 async function turtleSave(req: Request) {
   if (req.method != "POST") {
     // Different status code?
@@ -58,30 +43,13 @@ async function turtleSave(req: Request) {
   return;
 }
 
-export async function serve(req: Request, system: System) {
-  if (req.url == "/welcome-visitors.json") {
-    wiki.serveJson(
-      req,
-      wiki.welcomePage("[[DenoWiki]]", "[[Wander]]")
-    );
-  } else if (req.url == "/wander.json") {
-    console.log({turtles: Object.keys(turtle)});
-    wiki.serveJson(
-      req,
-      wiki.page("Wander", [
-        wiki.item("turtle-wander", {}),
-        ...(Object.entries(turtle).map(([_, it]) => wiki.item("turtle", it)))
-      ])
-    );
-  } else if (metaPages[req.url]) {
-    // These are meta-pages from the meta-pages folder
-    console.log("calling:", metaPages[req.url]);
-    let data = await metaPages[req.url](req, system);
-    wiki.serveJson(req, data);
-  } else if (wantsTurtleSave(req)) {
-    return turtleSave(req)
-  } // This will serve system urls
-  else {
-    wiki.serve(req, system);
-  }
-}
+export let handler = new wiki.Handler()
+
+handler.page(wiki.welcomePage("[[DenoWiki]]", "[[Wander]]"))
+handler.items("Wander", () => {
+  return [
+  wiki.item("turtle-wander", {}),
+  ...(Object.entries(turtle).map(([_, it]) => wiki.item("turtle", it)))
+]})
+handler.route("^/turtle/save", turtleSave)
+handler.plugins(import.meta.url, "client")
