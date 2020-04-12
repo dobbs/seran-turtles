@@ -1,4 +1,4 @@
-import {TurtleCanvas} from 'http://turtle.simple.localtest.me/assets/turtle/turtle-canvas.js';
+import {TurtleCanvas} from './turtle-canvas.mjs';
 
 // don't like having render(json) and json() need to know to ask
 // this for the turtle, to get the history. demeter violation and also
