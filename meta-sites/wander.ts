@@ -14,22 +14,9 @@ async function turtleSave(req: Request) {
     wiki.serve404(req);
     return
   }
-  // building a JSON blob from req.body.read 'cos I can't find a
-  // higher-level API. but seems hard to believe I haven't missed
-  // something obvious.
-  // copied a bunch of this from deno's http server source:
-  // https://github.com/denoland/deno/blob/bced52505f32d6cca4f944bb610a8a26767908a8/std/http/server.ts#L57-L66
-  const buf = new Uint8Array(req.contentLength);
-  let bufSlice = buf;
-  let totRead = 0;
-  while (true) {
-    const nread = await req.body.read(bufSlice);
-    if (nread === Deno.EOF) break;
-    totRead += nread;
-    if (totRead >= req.contentLength) break;
-    bufSlice = bufSlice.subarray(nread);
-  }
-  let body = JSON.parse(String.fromCharCode(...buf))
+  const decoder = new TextDecoder('utf-8');
+  const text = decoder.decode(await Deno.readAll(req.body));
+  const body = JSON.parse(text);
   console.log({where: 'POST /turtle/save', id:body.id, historyLength:body.history.length});
   turtle[body.id] = body;
   wiki.serveJson(req, {success: true, ...body});
