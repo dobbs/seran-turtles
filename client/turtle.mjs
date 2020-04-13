@@ -17,7 +17,7 @@ export class Turtle extends TurtleCanvas {
       this.turn().move().turn().nextMovesize().move();
       this.save();
     } else {
-      this.turtle._history = json.history
+      this.turtle.history = json.history
     }
   }
 
@@ -27,7 +27,8 @@ export class Turtle extends TurtleCanvas {
       id: this.id,
       type: "turtle",
       text: this.text,
-      history: [...this.turtle.history]
+      history: [...this.turtle.history],
+      options: {...this.turtle.options}
     }
   }
 

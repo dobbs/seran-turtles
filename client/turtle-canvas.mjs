@@ -29,6 +29,12 @@ export class Turtle {
   get origin() {return {...this._origin};}
   get options() {return {...this._options};}
   get history() {return [...this._history];}
+  set history(json) {
+    const [origin,...tail] = this._history = json;
+    const moment = tail.pop();
+    this._origin = origin.state;
+    this._moment = moment.state;
+  }
 
   clear() {
     this._moment = this.origin;
