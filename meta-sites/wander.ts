@@ -27,11 +27,8 @@ export const plugins = ["/turtle.mjs"];
 export const handler = new wiki.Handler();
 handler.plugins(import.meta.url, 'client');
 handler.page(wiki.welcomePage("[[DenoWiki]]", "[[Wander]]"));
-handler.page({
+handler.route(`/wander.json`, (req, _system) => wiki.serveJson(req, {
   title: 'Wander',
-  story: () => {
-    console.log({where: 'Wander handler', turtles: Object.keys(turtle)});
-    return Object.entries(turtle).map(([_, it]) => wiki.item("turtle", it));
-  },
-});
+  story: Object.entries(turtle).map(([_, it]) => wiki.item("turtle", it))
+}));
 handler.route('/turtle/save', turtleSave);
