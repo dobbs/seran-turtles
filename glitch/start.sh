@@ -1,6 +1,6 @@
 #! /bin/bash
 
-readonly SITE=$GLITCH_DOMAIN.glitch.me
+readonly SITE=dobbs-seran-turtles.glitch.me
 
 cd /app/seran-wiki
 ./seran-wiki.sh --domain=$SITE ../meta-sites/$SITE &

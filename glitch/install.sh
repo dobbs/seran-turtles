@@ -14,8 +14,8 @@ if [ ! -d /app/seran-wiki  ]; then
   git clone https://github.com/joshuabenuck/seran-wiki
 fi
 
-readonly LINK=/app/meta-sites/$GLITCH_DOMAIN.glitch.me.ts
-if [ ! -h $LINK ]; then
+readonly SITE=dobbs-seran-turtles.glitch.me
+if [ ! -h /app/meta-sites/${SITE}.ts ]; then
   cd /app/meta-sites
-  ln -s wander.ts $LINK
+  ln -s wander.ts $SITE
 fi
