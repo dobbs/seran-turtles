@@ -17,5 +17,5 @@ fi
 readonly SITE=dobbs-seran-turtles.glitch.me
 if [ ! -h /app/meta-sites/${SITE}.ts ]; then
   cd /app/meta-sites
-  ln -s wander.ts $SITE
+  ln -s wander.ts $SITE.ts
 fi
