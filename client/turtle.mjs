@@ -1,8 +1,17 @@
 import {TurtleCanvas} from './turtle-canvas.mjs';
+import {TurtleControls} from './turtle-controls.mjs';
 
 // Don't like asking turtle for history in get and set json().
 // demeter violation and also asking instead of telling.
 export class Turtle extends TurtleCanvas {
+  constructor() {
+    super();
+    // TurtleCanvas includes a <slot> where child elements appear.
+    // Cannot decide at the time of this writing if that slot and this
+    // application of the slot are the right way to organize the
+    // custom elements, or more of a terrible hack.
+    this.appendChild(new TurtleControls());
+  }
   connectedCallback() {
     this.draw();
   }
