@@ -13,7 +13,7 @@ canvas {
 <canvas width="32" height="32"></canvas>`
 export class TurnButton extends HTMLElement {
   static get observedAttributes() {
-    return ['numerator', 'denominator', 'width', 'height'];
+    return ['numerator', 'denominator', 'width', 'height', 'anticlockwise'];
   }
   constructor() {
     super()
@@ -34,6 +34,9 @@ export class TurnButton extends HTMLElement {
     }
     this.draw();
   }
+  // TODO should we enforce inputs?
+  // e.g. restrict rotation to CLOCKWISE or COUNTERCLOCKWISE?
+  // e.g. restrict inputs to the setters to integer values
   get context() { return this.canvas.getContext('2d'); }
   get width() { return this.getAttribute('width'); }
   set width(int) { this.setAttribute('width', int); }
@@ -43,12 +46,20 @@ export class TurnButton extends HTMLElement {
   set numerator(int) { this.setAttribute('numerator', int); }
   get denominator() { return this.getAttribute('denominator'); }
   set denominator(int) { this.setAttribute('denominator', int); }
+  get anticlockwise() { return this.hasAttribute('anticlockwise'); }
+  set anticlockwise(bool) {
+    if (bool) {
+      this.setAttribute('anticlockwise', '');
+    } else {
+      this.removeAttribute('anticlockwise');
+    }
+  }
   get _radius() { return Math.min(this.width, this.height)/2 - 2; }
   draw() {
-    this.turnTransform();
+    this._xformCoordinatesFromCanvasToTurtle();
     this.drawNumerator();
     this.drawDenominator();
-    this.context.restore();
+    this._restoreCoordinatesToCanvas();
   }
   drawNumerator() {
     const {context, _radius, numerator, denominator} = this;
@@ -73,14 +84,19 @@ export class TurnButton extends HTMLElement {
     context.strokeStyle = '#aaa';
     context.stroke();
   }
-  turnTransform(fn, flipVertical=null) {
-    const {context, width, height} = this;
+  _xformCoordinatesFromCanvasToTurtle() {
+    // HTML canvas points 0 radians to the east
+    // Turtle geometry points 0 radians to the north
+    const {context, width, height, anticlockwise} = this;
     context.clearRect(0, 0, width, height);
     context.save();
     context.translate(width/2, height/2);
-    if (flipVertical)
+    if (anticlockwise)
       context.scale(-1, 1);
     context.rotate(-Math.PI/2);
+  }
+  _restoreCoordinatesToCanvas() {
+    this.context.restore()
   }
 }
 
